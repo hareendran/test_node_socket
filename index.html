@@ -1,0 +1,51 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(function(){
+            var iosocket = io.connect();
+
+            iosocket.on('connect', function () {
+                $('#incomingChatMessages').append($('<li>Connected</li>'));
+
+
+                iosocket.on('disconnect', function() {
+                    $('#incomingChatMessages').append('<li>Disconnected</li>');
+                });
+
+
+            });
+
+            iosocket.on('server_message', function(message) {
+              console.log("server message");
+                $('#incomingChatMessages').append($('<li></li>').text(message));
+            });
+
+            $('#outgoingChatMessage').keypress(function(event) {
+                if(event.which == 13) {
+                    event.preventDefault();
+                    iosocket.emit('client_out_going',$('#outgoingChatMessage').val());
+                    //$('#incomingChatMessages').append($('<li></li>').text($('#outgoingChatMessage').val()));
+                    $('#outgoingChatMessage').val('');
+                }
+            });
+
+            $("#btn_1").click(function() {
+                $('#incomingChatMessages').empty();
+                iosocket.emit("flush_cache");
+          });
+        });
+    </script>
+</head>
+<body>
+Incoming Chat:&nbsp;<ul id="incomingChatMessages"></ul>
+
+
+<input type="text" id="outgoingChatMessage">
+<br>
+<br>
+<br>
+<button type="button" id="btn_1" style="color:red">Flush All</button>
+</body>
+</html>
